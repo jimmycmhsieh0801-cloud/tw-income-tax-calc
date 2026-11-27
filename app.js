@@ -30,6 +30,23 @@ if (typeof document !== "undefined") {
     document.getElementById("taxPayEl").textContent = `NT$ ${res.tax.toLocaleString()}`;
   }
   ids.forEach(id => document.getElementById(id).addEventListener("input", render));
+  const copyBtn = document.getElementById("copyResultBtn");
+  if (copyBtn) {
+    copyBtn.addEventListener("click", () => {
+      const [g, m, d, y] = ids.map(id => document.getElementById(id).value);
+      const res = calcIncomeTax(g, m, d, y);
+      const summary = `【2026 綜合所得稅試算（${y}年度）】\n年薪總額：NT$${Number(g).toLocaleString()}｜免稅+扣除額：NT$${res.totalDeduction.toLocaleString()}\n所得淨額：NT$${res.netIncome.toLocaleString()}（稅率 ${res.netIncome > 0 ? res.ratePct + "%" : "0% 免稅"}）\n預估應納稅額：NT$${res.tax.toLocaleString()}\n👉 免費試算：https://jimmycmhsieh0801-cloud.github.io/tw-income-tax-calc/`;
+      const done = () => {
+        copyBtn.textContent = "✓ 已複製試算摘要，快去貼上分享！";
+        setTimeout(() => { copyBtn.textContent = "📋 一鍵複製試算結果分享（貼到 Line 群 / Threads 討論）"; }, 2200);
+        if (typeof gtag === "function") gtag("event", "share_result_copy", { tool: "tw-income-tax-calc" });
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(summary).then(done).catch(() => {});
+      }
+    });
+  }
+
   render();
 }
 if (typeof module !== "undefined" && module.exports) module.exports = { calcIncomeTax };
